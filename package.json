@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
+    "openapi:lint": "redocly lint openapi-rest.yml",
     "lint:fix": "eslint . --fix",
     "prettier:check": "prettier . --check",
     "prettier:fix": "prettier . --write",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@redocly/cli": "2.71.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/react": "^18.3.18",
