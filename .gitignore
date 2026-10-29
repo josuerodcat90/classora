@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+docs/
+odd/tasks/
+.atl/
+odd/
+.playwright-mcp/

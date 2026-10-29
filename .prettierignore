@@ -1,0 +1,28 @@
+# Generated output and dependencies
+node_modules/
+dist/
+build/
+coverage/
+
+# Internal or agent files
+docs/
+odd/
+.atl/
+.agents/
+.claude/
+
+# Package manifests, lockfiles and formatter configuration
+package*.json
+*-lock.json
+.prettierrc.json
+
+# Other file types excluded from formatting
+**/*.html
+**/*.md
+*.yml
+*.yaml
+*.jsonc
+
+# Environment files
+.env
+.env.*
