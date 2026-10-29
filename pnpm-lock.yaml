@@ -18,6 +18,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.13.0)
+      '@redocly/cli':
+        specifier: 2.71.2
+        version: 2.71.2
       '@testing-library/jest-dom':
         specifier: ^6.6.3
         version: 6.9.1
@@ -446,6 +449,11 @@ packages:
     cpu: [x64]
     os: [linux]
     libc: [glibc]
+
+  '@redocly/cli@2.71.2':
+    resolution: {integrity: sha512-Q7RL+uP23phdiWSgtTSNB1ZchRW7Y1T6zFSnxtFl/+Q5seQ38TVQoyHHB84sgDpvYppEPLNzzxLJX7xU7cIH2Q==}
+    engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
+    hasBin: true
 
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -1878,6 +1886,8 @@ snapshots:
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
+
+  '@redocly/cli@2.71.2': {}
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
