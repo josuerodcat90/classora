@@ -117,6 +117,50 @@ describe('browser HTTP mock', () => {
 		}
 	});
 
+	it('validates search length in Unicode code points without changing query behavior', async () => {
+		const fetch = createMockFetch();
+		const before = await (
+			await fetch('/api/v1/tickets', { headers: auth })
+		).json();
+		for (const length of [129, 256]) {
+			const query = new URLSearchParams({ q: '😀'.repeat(length) });
+			const response = await fetch(`/api/v1/tickets?${query}`, {
+				headers: auth,
+			});
+			expect(response.status, String(length)).toBe(200);
+			expect(await response.json()).toEqual({
+				data: [],
+				pagination: { offset: 0, limit: 20, totalElements: 0 },
+			});
+		}
+		const query = new URLSearchParams({ q: '😀'.repeat(257) });
+		const rejected = await fetch(`/api/v1/tickets?${query}`, {
+			headers: auth,
+		});
+		expect(rejected.status).toBe(422);
+		expect(rejected.headers.get('content-type')).toBe(
+			'application/problem+json',
+		);
+		expect(await rejected.json()).toEqual({
+			type: 'about:blank',
+			title: 'Unprocessable Entity',
+			status: 422,
+		});
+		expect(
+			await (await fetch('/api/v1/tickets', { headers: auth })).json(),
+		).toEqual(before);
+		const filtered = await fetch(
+			'/api/v1/tickets?q=PAYMENTS&severity=HIGH&state=REPORTED',
+			{ headers: auth },
+		);
+		expect(filtered.status).toBe(200);
+		expect(
+			(await filtered.json()).data.map(
+				(ticket: { id: string }) => ticket.id,
+			),
+		).toEqual(['ticket-1024']);
+	});
+
 	it('accepts valid offset and leap-day timestamps', async () => {
 		const fetch = createMockFetch();
 		for (const dueDate of [
