@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createMockHandlers } from '../../mocks/ticket-api';
+import { baselineTickets, createMockHandlers } from '../../mocks/ticket-api';
 import { ticketKeys } from '../../utils';
 import type { TicketPage } from '../../domain';
 import { useSetDueDate } from './useSetDueDate';
@@ -39,7 +39,7 @@ const initial: TicketPage = {
 const date = '2026-11-15T10:00:00Z';
 
 beforeAll(() => server.listen());
-beforeEach(() => server.resetHandlers(...createMockHandlers()));
+beforeEach(() => server.resetHandlers(...createMockHandlers(baselineTickets)));
 afterAll(() => server.close());
 
 function setup(token: string) {

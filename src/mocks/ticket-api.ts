@@ -1,7 +1,8 @@
 import { http } from 'msw';
 import type { Ticket } from '../domain/ticket.types';
+import { generatedTickets } from './ticket-seed';
 
-const seed: Ticket[] = [
+export const baselineTickets: Ticket[] = [
 	{
 		id: 'ticket-1024',
 		key: 'SEC-1024',
@@ -124,7 +125,9 @@ function validDate(value: string): boolean {
 	);
 }
 
-export function createMockHandlers() {
+export function createMockHandlers(
+	seed: Ticket[] = [...baselineTickets, ...generatedTickets],
+) {
 	const tickets = seed.map((ticket) => ({ ...ticket }));
 	let revision = 0;
 	const origin = window.location.origin.replace(

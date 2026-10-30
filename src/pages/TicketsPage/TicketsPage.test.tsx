@@ -10,7 +10,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createMockHandlers } from '../../mocks/ticket-api';
+import { baselineTickets, createMockHandlers } from '../../mocks/ticket-api';
 import { TicketsPage } from './TicketsPage';
 
 declare const process: { env: { TZ?: string } };
@@ -27,7 +27,7 @@ beforeAll(() => {
 	});
 	server.listen();
 });
-beforeEach(() => server.resetHandlers(...createMockHandlers()));
+beforeEach(() => server.resetHandlers(...createMockHandlers(baselineTickets)));
 afterAll(() => server.close());
 
 function Location() {
@@ -36,7 +36,7 @@ function Location() {
 	return (
 		<>
 			<output data-testid='location'>{location.search}</output>
-			<button onClick={() => navigate(-1)}>Atrás</button>
+			<button onClick={() => navigate(-1)}>AtrÃ¡s</button>
 			<button onClick={() => navigate(1)}>Adelante</button>
 		</>
 	);
@@ -97,7 +97,7 @@ describe('ticket interface', () => {
 	it('shows empty results and numbered pagination', async () => {
 		renderPage('/?limit=1');
 		await screen.findByText('SEC-1025');
-		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
+		fireEvent.click(screen.getByRole('button', { name: 'PÃ¡gina 2' }));
 		expect(await screen.findByText('SEC-1024')).toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText('Buscar'), {
 			target: { value: 'not-found' },
@@ -112,7 +112,7 @@ describe('ticket interface', () => {
 		await waitFor(() =>
 			expect(
 				screen.queryByRole('button', {
-					name: /fecha límite.*SEC-1024/i,
+					name: /fecha lÃ­mite.*SEC-1024/i,
 				}),
 			).not.toBeInTheDocument(),
 		);
@@ -130,7 +130,7 @@ describe('ticket interface', () => {
 		fireEvent.change(screen.getByLabelText('Buscar'), {
 			target: { value: 'payments' },
 		});
-		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
+		fireEvent.click(screen.getByRole('button', { name: 'PÃ¡gina 2' }));
 		await waitFor(() =>
 			expect(screen.getByTestId('location')).toHaveTextContent(
 				'q=payments',
@@ -159,7 +159,7 @@ describe('ticket interface', () => {
 		fireEvent.change(screen.getByLabelText('Buscar'), {
 			target: { value: 'draft' },
 		});
-		fireEvent.click(screen.getByRole('button', { name: 'Atrás' }));
+		fireEvent.click(screen.getByRole('button', { name: 'AtrÃ¡s' }));
 		expect(screen.getByLabelText('Buscar')).toHaveValue('payments');
 		fireEvent.click(screen.getByRole('button', { name: 'Adelante' }));
 		expect(screen.getByLabelText('Buscar')).toHaveValue('payments');
@@ -173,16 +173,16 @@ describe('ticket interface', () => {
 			renderPage();
 			fireEvent.click(
 				await screen.findByRole('button', {
-					name: /fecha límite.*SEC-1024/i,
+					name: /fecha lÃ­mite.*SEC-1024/i,
 				}),
 			);
 			fireEvent.change(
-				screen.getByLabelText('Fecha límite para SEC-1024'),
+				screen.getByLabelText('Fecha lÃ­mite para SEC-1024'),
 				{ target: { value: '2027-01-20' } },
 			);
 			fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 			expect(
-				await screen.findByText('Fecha límite actualizada'),
+				await screen.findByText('Fecha lÃ­mite actualizada'),
 			).toBeInTheDocument();
 			const row = screen.getByText('SEC-1024').closest('article')!;
 			expect(within(row).getByText('20 ene 2027')).toBeInTheDocument();
@@ -206,7 +206,7 @@ describe('ticket interface', () => {
 			}),
 		);
 		renderPage();
-		expect(screen.getByText('Cargando tickets…')).toHaveAttribute(
+		expect(screen.getByText('Cargando ticketsâ€¦')).toHaveAttribute(
 			'role',
 			'status',
 		);
@@ -229,31 +229,31 @@ describe('ticket interface', () => {
 		renderPage();
 		fireEvent.click(
 			await screen.findByRole('button', {
-				name: /fecha límite.*SEC-1024/i,
+				name: /fecha lÃ­mite.*SEC-1024/i,
 			}),
 		);
-		fireEvent.change(screen.getByLabelText('Fecha límite para SEC-1024'), {
+		fireEvent.change(screen.getByLabelText('Fecha lÃ­mite para SEC-1024'), {
 			target: { value: '2027-01-20' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 		const row = screen.getByText('SEC-1024').closest('article')!;
 		await waitFor(() =>
 			expect(
-				within(row).getByRole('button', { name: /fecha límite/i }),
+				within(row).getByRole('button', { name: /fecha lÃ­mite/i }),
 			).toBeDisabled(),
 		);
-		expect(within(row).getByText('Guardando…')).toBeInTheDocument();
+		expect(within(row).getByText('Guardandoâ€¦')).toBeInTheDocument();
 		expect(within(row).getByText('En progreso')).toBeInTheDocument();
 		release();
 		expect(
-			await screen.findByText('No se pudo actualizar la fecha límite'),
+			await screen.findByText('No se pudo actualizar la fecha lÃ­mite'),
 		).toBeInTheDocument();
 		await waitFor(() =>
 			expect(within(row).getByText('Reportado')).toBeInTheDocument(),
 		);
-		expect(within(row).getByText('Sin fecha límite')).toBeInTheDocument();
+		expect(within(row).getByText('Sin fecha lÃ­mite')).toBeInTheDocument();
 		expect(
-			within(row).getByRole('button', { name: /fecha límite/i }),
+			within(row).getByRole('button', { name: /fecha lÃ­mite/i }),
 		).toBeEnabled();
 	});
 	it('saves a due date and reports success', async () => {
@@ -261,15 +261,15 @@ describe('ticket interface', () => {
 		await screen.findByText('SEC-1024');
 		fireEvent.click(
 			await screen.findByRole('button', {
-				name: /fecha límite.*SEC-1024/i,
+				name: /fecha lÃ­mite.*SEC-1024/i,
 			}),
 		);
-		fireEvent.change(screen.getByLabelText('Fecha límite para SEC-1024'), {
+		fireEvent.change(screen.getByLabelText('Fecha lÃ­mite para SEC-1024'), {
 			target: { value: '2027-01-20' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 		expect(
-			await screen.findByText('Fecha límite actualizada'),
+			await screen.findByText('Fecha lÃ­mite actualizada'),
 		).toBeInTheDocument();
 	});
 });

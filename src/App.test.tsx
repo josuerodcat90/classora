@@ -5,7 +5,7 @@ import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router-dom';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import App from './App';
-import { createMockHandlers } from './mocks/ticket-api';
+import { baselineTickets, createMockHandlers } from './mocks/ticket-api';
 
 const server = setupServer();
 beforeAll(() => {
@@ -19,7 +19,7 @@ beforeAll(() => {
 	});
 	server.listen();
 });
-beforeEach(() => server.resetHandlers(...createMockHandlers()));
+beforeEach(() => server.resetHandlers(...createMockHandlers(baselineTickets)));
 afterAll(() => server.close());
 
 function renderApp(token = 'mock-editor', initialPath = '/') {

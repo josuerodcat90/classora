@@ -1,13 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
-import { createMockHandlers } from './ticket-api';
+import { baselineTickets, createMockHandlers } from './ticket-api';
+import type { Ticket } from '../domain/ticket.types';
 
 const server = setupServer();
 beforeEach(() => server.listen());
 afterEach(() => server.close());
 
-function createMockFetch(): typeof fetch {
-	server.resetHandlers(...createMockHandlers());
+function createMockFetch(
+	seed: Ticket[] | null = baselineTickets,
+): typeof fetch {
+	server.resetHandlers(
+		...(seed ? createMockHandlers(seed) : createMockHandlers()),
+	);
 	return (input, init) =>
 		fetch(
 			input instanceof Request
@@ -20,6 +25,38 @@ function createMockFetch(): typeof fetch {
 const auth = { Authorization: 'Bearer mock-editor' };
 
 describe('browser HTTP mock', () => {
+	it('provides 50 reproducible, unique tickets across pages', async () => {
+		const fetch = createMockFetch(null);
+		const response = await fetch('/api/v1/tickets?limit=100', {
+			headers: auth,
+		});
+		expect(response.status).toBe(200);
+		const page = await response.json();
+		expect(page.pagination.totalElements).toBe(50);
+		expect(page.data).toHaveLength(50);
+		expect(
+			new Set(page.data.map((ticket: { id: string }) => ticket.id)).size,
+		).toBe(50);
+		expect(
+			new Set(page.data.map((ticket: { key: string }) => ticket.key))
+				.size,
+		).toBe(50);
+		expect(
+			new Set(page.data.map((ticket: { state: string }) => ticket.state))
+				.size,
+		).toBe(4);
+		expect(
+			new Set(
+				page.data.map(
+					(ticket: { severity: string }) => ticket.severity,
+				),
+			).size,
+		).toBe(4);
+		const reset = await createMockFetch(null)('/api/v1/tickets?limit=100', {
+			headers: auth,
+		});
+		expect(await reset.json()).toEqual(page);
+	});
 	it('serves, updates and resets deterministic tickets through HTTP', async () => {
 		const fetch = createMockFetch();
 		const response = await fetch('/api/v1/tickets?state=REPORTED&limit=1', {
