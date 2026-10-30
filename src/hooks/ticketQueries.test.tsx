@@ -4,7 +4,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
 import { createMockHandlers } from '../mocks/ticket-api';
-import { useCurrentUser, useTickets } from './ticketQueries';
+import { useCurrentUser, useTickets } from './';
 
 const server = setupServer();
 const params = {

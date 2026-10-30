@@ -1,53 +1,21 @@
 import {
 	useMutation,
-	useMutationState,
 	useQueryClient,
-	type QueryKey,
 	type QueryClient,
 } from '@tanstack/react-query';
-import type { Ticket } from '../domain/ticket.types';
-import type { TicketListParams } from '../ticket-filters/ticketListParams';
-import { ApiError, ticketKeys, type TicketPage } from './ticketQueries';
+import type { TicketPage } from '../../domain';
+import type { TicketListParams } from '../../domain';
+import { ticketKeys } from '../../utils';
+import { setDueDate } from '../../services/tickets';
+import type { Input, Snapshot } from './useSetDueDate.types';
 
 const pendingByClient = new WeakMap<QueryClient, Set<string>>();
-
-type Input = { id: string; dueDate: string };
-type Snapshot = {
-	key: QueryKey;
-	ticket: Ticket;
-	index: number;
-	removed: boolean;
-};
-
-export function usePendingTicketIds() {
-	return useMutationState({
-		filters: { mutationKey: ['tickets', 'setDueDate'], status: 'pending' },
-		select: (mutation) => (mutation.state.variables as Input).id,
-	});
-}
 
 export function useSetDueDate(token: string) {
 	const client = useQueryClient();
 	return useMutation({
 		mutationKey: ['tickets', 'setDueDate'],
-		mutationFn: async ({ id, dueDate }: Input): Promise<Ticket> => {
-			const response = await fetch(
-				new URL(
-					`/api/v1/tickets/${encodeURIComponent(id)}`,
-					window.location.origin,
-				),
-				{
-					method: 'PATCH',
-					headers: {
-						Authorization: `Bearer ${token}`,
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({ dueDate }),
-				},
-			);
-			if (!response.ok) throw new ApiError(response.status);
-			return response.json() as Promise<Ticket>;
-		},
+		mutationFn: ({ id, dueDate }: Input) => setDueDate(id, dueDate, token),
 		onMutate: async ({ id, dueDate }) => {
 			let pending = pendingByClient.get(client);
 			if (!pending) {

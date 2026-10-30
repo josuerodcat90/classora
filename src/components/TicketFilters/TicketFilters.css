@@ -1,0 +1,23 @@
+.ticket-filters {
+	border: 1px solid #34343a;
+	background: #101114;
+	border-radius: 12px;
+	padding: 20px;
+	height: fit-content;
+}
+.ticket-filters h2 {
+	font-size: 16px;
+	margin: 0;
+}
+.ticket-filters label {
+	display: grid;
+	gap: 6px;
+	margin-top: 18px;
+	color: #d0d6e0;
+	font-size: 12px;
+	font-weight: 600;
+}
+.ticket-filters .reset {
+	width: 100%;
+	margin-top: 22px;
+}

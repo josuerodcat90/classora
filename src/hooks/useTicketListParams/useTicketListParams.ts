@@ -1,9 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
-import {
-	parseTicketListParams,
-	serializeTicketListParams,
-	type TicketListParams,
-} from './ticketListParams';
+import type { TicketListParams } from '../../domain';
+import { parseTicketListParams, serializeTicketListParams } from '../../utils';
 
 export function useTicketListParams() {
 	const [search, setSearch] = useSearchParams();
