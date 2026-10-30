@@ -165,7 +165,7 @@ export function createMockHandlers() {
 				!/^\d+$/.test(limitText) ||
 				limit < 1 ||
 				limit > 100 ||
-				q.length > 256 ||
+				[...q].length > 256 ||
 				(state !== null && !states.includes(state)) ||
 				(severity !== null && !severities.includes(severity)) ||
 				!['LAST_MODIFIED', 'TARGET_DATE'].includes(sort) ||
