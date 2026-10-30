@@ -99,11 +99,11 @@ export function TicketRow({ ticket, canEdit, pending, save }: TicketRowProps) {
 						/>
 					</button>
 				)}
-				{editing && (
+				{editing && canEdit && (
 					<form
 						onSubmit={(event) => {
 							event.preventDefault();
-							if (!date) return;
+							if (!date || !canEdit) return;
 							save(
 								ticket.id,
 								new Date(`${date}T00:00:00Z`).toISOString(),

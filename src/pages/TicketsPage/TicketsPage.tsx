@@ -95,8 +95,11 @@ export function TicketsPage({ token = 'mock-editor' }: TicketsPageProps) {
 						tickets={tickets}
 						permissionsError={user.isError}
 						canEdit={
-							user.data?.permissions.includes('tickets.update') ??
-							false
+							!user.isError &&
+							(user.data?.permissions.includes(
+								'tickets.update',
+							) ??
+								false)
 						}
 						pending={pending}
 						params={params}

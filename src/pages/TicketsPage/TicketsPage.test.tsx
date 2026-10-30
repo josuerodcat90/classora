@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
+	act,
 	fireEvent,
 	render,
 	screen,
@@ -36,7 +37,7 @@ function Location() {
 	return (
 		<>
 			<output data-testid='location'>{location.search}</output>
-			<button onClick={() => navigate(-1)}>AtrÃ¡s</button>
+			<button onClick={() => navigate(-1)}>Atrás</button>
 			<button onClick={() => navigate(1)}>Adelante</button>
 		</>
 	);
@@ -48,7 +49,7 @@ function renderPage(path = '/', token = 'mock-editor') {
 			mutations: { retry: false },
 		},
 	});
-	return render(
+	const result = render(
 		<QueryClientProvider client={client}>
 			<MemoryRouter initialEntries={[path]}>
 				<TicketsPage token={token} />
@@ -56,6 +57,7 @@ function renderPage(path = '/', token = 'mock-editor') {
 			</MemoryRouter>
 		</QueryClientProvider>,
 	);
+	return { ...result, client };
 }
 
 describe('ticket interface', () => {
@@ -97,7 +99,7 @@ describe('ticket interface', () => {
 	it('shows empty results and numbered pagination', async () => {
 		renderPage('/?limit=1');
 		await screen.findByText('SEC-1025');
-		fireEvent.click(screen.getByRole('button', { name: 'PÃ¡gina 2' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
 		expect(await screen.findByText('SEC-1024')).toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText('Buscar'), {
 			target: { value: 'not-found' },
@@ -112,10 +114,56 @@ describe('ticket interface', () => {
 		await waitFor(() =>
 			expect(
 				screen.queryByRole('button', {
-					name: /fecha lÃ­mite.*SEC-1024/i,
+					name: /fecha límite.*SEC-1024/i,
 				}),
 			).not.toBeInTheDocument(),
 		);
+	});
+	it('recovers cached tickets through retry without losing pagination', async () => {
+		const { client } = renderPage('/?limit=1');
+		await screen.findByText('SEC-1025');
+		server.use(http.get('/api/v1/tickets', () => HttpResponse.error()));
+		await act(async () => {
+			await client.invalidateQueries({ queryKey: ['tickets'] });
+		});
+		expect(await screen.findByRole('alert')).toHaveTextContent(
+			'No se pudieron actualizar los tickets',
+		);
+		expect(screen.getByText('SEC-1025')).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: 'Página siguiente' }),
+		).toBeEnabled();
+		server.resetHandlers(...createMockHandlers(baselineTickets));
+		fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+		await waitFor(() =>
+			expect(screen.queryByRole('alert')).not.toBeInTheDocument(),
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
+		expect(await screen.findByText('SEC-1024')).toBeInTheDocument();
+	});
+	it('disables an open editor when refreshing permissions fails', async () => {
+		const { client } = renderPage();
+		fireEvent.click(
+			await screen.findByRole('button', {
+				name: /fecha límite.*SEC-1024/i,
+			}),
+		);
+		fireEvent.change(screen.getByLabelText('Fecha límite para SEC-1024'), {
+			target: { value: '2027-01-20' },
+		});
+		server.use(http.get('/api/v1/me', () => HttpResponse.error()));
+		await act(async () => {
+			await client.invalidateQueries({ queryKey: ['me'] });
+		});
+		expect(
+			await screen.findByText(/No se pudieron cargar los permisos/),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: 'Guardar' }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: /fecha límite.*SEC-1024/i }),
+		).not.toBeInTheDocument();
 	});
 	it('shows an error when tickets cannot be loaded', async () => {
 		server.use(http.get('/api/v1/tickets', () => HttpResponse.error()));
@@ -130,7 +178,7 @@ describe('ticket interface', () => {
 		fireEvent.change(screen.getByLabelText('Buscar'), {
 			target: { value: 'payments' },
 		});
-		fireEvent.click(screen.getByRole('button', { name: 'PÃ¡gina 2' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
 		await waitFor(() =>
 			expect(screen.getByTestId('location')).toHaveTextContent(
 				'q=payments',
@@ -159,7 +207,7 @@ describe('ticket interface', () => {
 		fireEvent.change(screen.getByLabelText('Buscar'), {
 			target: { value: 'draft' },
 		});
-		fireEvent.click(screen.getByRole('button', { name: 'AtrÃ¡s' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Atrás' }));
 		expect(screen.getByLabelText('Buscar')).toHaveValue('payments');
 		fireEvent.click(screen.getByRole('button', { name: 'Adelante' }));
 		expect(screen.getByLabelText('Buscar')).toHaveValue('payments');
@@ -173,16 +221,16 @@ describe('ticket interface', () => {
 			renderPage();
 			fireEvent.click(
 				await screen.findByRole('button', {
-					name: /fecha lÃ­mite.*SEC-1024/i,
+					name: /fecha límite.*SEC-1024/i,
 				}),
 			);
 			fireEvent.change(
-				screen.getByLabelText('Fecha lÃ­mite para SEC-1024'),
+				screen.getByLabelText('Fecha límite para SEC-1024'),
 				{ target: { value: '2027-01-20' } },
 			);
 			fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 			expect(
-				await screen.findByText('Fecha lÃ­mite actualizada'),
+				await screen.findByText('Fecha límite actualizada'),
 			).toBeInTheDocument();
 			const row = screen.getByText('SEC-1024').closest('article')!;
 			expect(within(row).getByText('20 ene 2027')).toBeInTheDocument();
@@ -206,7 +254,7 @@ describe('ticket interface', () => {
 			}),
 		);
 		renderPage();
-		expect(screen.getByText('Cargando ticketsâ€¦')).toHaveAttribute(
+		expect(screen.getByText('Cargando tickets…')).toHaveAttribute(
 			'role',
 			'status',
 		);
@@ -229,31 +277,31 @@ describe('ticket interface', () => {
 		renderPage();
 		fireEvent.click(
 			await screen.findByRole('button', {
-				name: /fecha lÃ­mite.*SEC-1024/i,
+				name: /fecha límite.*SEC-1024/i,
 			}),
 		);
-		fireEvent.change(screen.getByLabelText('Fecha lÃ­mite para SEC-1024'), {
+		fireEvent.change(screen.getByLabelText('Fecha límite para SEC-1024'), {
 			target: { value: '2027-01-20' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 		const row = screen.getByText('SEC-1024').closest('article')!;
 		await waitFor(() =>
 			expect(
-				within(row).getByRole('button', { name: /fecha lÃ­mite/i }),
+				within(row).getByRole('button', { name: /fecha límite/i }),
 			).toBeDisabled(),
 		);
-		expect(within(row).getByText('Guardandoâ€¦')).toBeInTheDocument();
+		expect(within(row).getByText('Guardando…')).toBeInTheDocument();
 		expect(within(row).getByText('En progreso')).toBeInTheDocument();
 		release();
 		expect(
-			await screen.findByText('No se pudo actualizar la fecha lÃ­mite'),
+			await screen.findByText('No se pudo actualizar la fecha límite'),
 		).toBeInTheDocument();
 		await waitFor(() =>
 			expect(within(row).getByText('Reportado')).toBeInTheDocument(),
 		);
-		expect(within(row).getByText('Sin fecha lÃ­mite')).toBeInTheDocument();
+		expect(within(row).getByText('Sin fecha límite')).toBeInTheDocument();
 		expect(
-			within(row).getByRole('button', { name: /fecha lÃ­mite/i }),
+			within(row).getByRole('button', { name: /fecha límite/i }),
 		).toBeEnabled();
 	});
 	it('saves a due date and reports success', async () => {
@@ -261,15 +309,15 @@ describe('ticket interface', () => {
 		await screen.findByText('SEC-1024');
 		fireEvent.click(
 			await screen.findByRole('button', {
-				name: /fecha lÃ­mite.*SEC-1024/i,
+				name: /fecha límite.*SEC-1024/i,
 			}),
 		);
-		fireEvent.change(screen.getByLabelText('Fecha lÃ­mite para SEC-1024'), {
+		fireEvent.change(screen.getByLabelText('Fecha límite para SEC-1024'), {
 			target: { value: '2027-01-20' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 		expect(
-			await screen.findByText('Fecha lÃ­mite actualizada'),
+			await screen.findByText('Fecha límite actualizada'),
 		).toBeInTheDocument();
 	});
 });

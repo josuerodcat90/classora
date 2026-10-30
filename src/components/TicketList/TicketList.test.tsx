@@ -90,6 +90,26 @@ describe('TicketList', () => {
 		expect(refetch).toHaveBeenCalledOnce();
 	});
 
+	it('retains rows and pagination when a refresh fails', () => {
+		const onPage = vi.fn();
+		render(
+			<TicketList
+				{...props({
+					onPage,
+					tickets: query({ isError: true, isSuccess: false }),
+				})}
+			/>,
+		);
+		expect(screen.getByRole('alert')).toHaveTextContent(
+			'No se pudieron actualizar los tickets',
+		);
+		expect(screen.getByText('SEC-1')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
+		expect(onPage).toHaveBeenCalledWith(1);
+		fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+		expect(refetch).toHaveBeenCalled();
+	});
+
 	it('shows empty results without pagination', () => {
 		render(
 			<TicketList
