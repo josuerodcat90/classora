@@ -26,3 +26,6 @@ package*.json
 # Environment files
 .env
 .env.*
+
+public/mockServiceWorker.js
+.pnpm-store/
