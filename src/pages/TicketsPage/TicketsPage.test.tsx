@@ -291,11 +291,18 @@ describe('ticket interface', () => {
 			).toBeDisabled(),
 		);
 		expect(within(row).getByText('Guardando…')).toBeInTheDocument();
+		const savingToast = screen.getByText('Guardando fecha límite…');
+		expect(
+			savingToast.parentElement?.querySelector('.lucide-save-check'),
+		).toBeInTheDocument();
 		expect(within(row).getByText('En progreso')).toBeInTheDocument();
 		release();
 		expect(
 			await screen.findByText('No se pudo actualizar la fecha límite'),
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText('Guardando fecha límite…'),
+		).not.toBeInTheDocument();
 		await waitFor(() =>
 			expect(within(row).getByText('Reportado')).toBeInTheDocument(),
 		);
@@ -316,8 +323,13 @@ describe('ticket interface', () => {
 			target: { value: '2027-01-20' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+		const successToast = await screen.findByText(
+			'Fecha límite actualizada',
+		);
+		expect(successToast).toBeInTheDocument();
+		expect(successToast.parentElement).toHaveClass('app-toast');
 		expect(
-			await screen.findByText('Fecha límite actualizada'),
-		).toBeInTheDocument();
+			screen.queryByText('Guardando fecha límite…'),
+		).not.toBeInTheDocument();
 	});
 });
