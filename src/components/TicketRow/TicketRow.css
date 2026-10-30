@@ -1,0 +1,92 @@
+.ticket {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 12px;
+	padding: 12px 20px;
+	border-top: 1px solid #23252a;
+	align-items: center;
+}
+.ticket h3 {
+	font-size: 14px;
+	line-height: 1.35;
+	margin: 2px 0 6px;
+}
+.meta {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	align-items: center;
+	font-size: 12px;
+}
+.pill {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	border: 1px solid;
+	border-radius: 999px;
+	padding: 2px 8px;
+	white-space: nowrap;
+}
+.reported {
+	color: #c5cbff;
+	background: #20223a;
+	border-color: #656caa;
+}
+.in_progress {
+	color: #a9d4ff;
+	background: #172c3d;
+	border-color: #47728c;
+}
+.pending_security {
+	color: #e3c4ff;
+	background: #30203c;
+	border-color: #85609d;
+}
+.done {
+	color: #b4e8c4;
+	background: #1b3025;
+	border-color: #517d61;
+}
+.critical {
+	color: #ffbec0;
+	background: #3b2023;
+	border-color: #a25a60;
+}
+.high {
+	color: #ffd1a8;
+	background: #38291d;
+	border-color: #966b48;
+}
+.medium {
+	color: #f2dfa3;
+	background: #332d1b;
+	border-color: #897942;
+}
+.low {
+	color: #c9d1dc;
+	background: #272b31;
+	border-color: #697482;
+}
+.action,
+.action form {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	font-size: 12px;
+}
+.action input {
+	width: auto;
+}
+.icon-button {
+	width: 40px;
+	height: 40px;
+	padding: 8px;
+	display: grid;
+	place-items: center;
+}
+@media (max-width: 700px) {
+	.ticket {
+		grid-template-columns: 1fr;
+	}
+}
