@@ -123,7 +123,9 @@ describe('TicketList', () => {
 		);
 		expect(screen.getByText('3 resultados')).toBeInTheDocument();
 		expect(screen.getByText('1–1 de 3 tickets')).toBeInTheDocument();
-		expect(screen.getByText('SEC-1')).toBeInTheDocument();
+		expect(
+			screen.getByRole('region', { name: 'Tickets' }),
+		).toContainElement(screen.getByText('SEC-1'));
 		expect(
 			screen.getByRole('button', {
 				name: 'Editar fecha límite de SEC-1',

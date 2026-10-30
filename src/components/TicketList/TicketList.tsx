@@ -61,15 +61,22 @@ export function TicketList({
 			{tickets.isSuccess && tickets.data.data.length === 0 && (
 				<p className='message'>No se encontraron tickets.</p>
 			)}
-			{tickets.data?.data.map((ticket) => (
-				<TicketRow
-					key={ticket.id}
-					ticket={ticket}
-					canEdit={canEdit}
-					pending={pending.includes(ticket.id)}
-					save={onSave}
-				/>
-			))}
+			<div
+				className='list-rows'
+				role='region'
+				aria-label='Tickets'
+				tabIndex={0}
+			>
+				{tickets.data?.data.map((ticket) => (
+					<TicketRow
+						key={ticket.id}
+						ticket={ticket}
+						canEdit={canEdit}
+						pending={pending.includes(ticket.id)}
+						save={onSave}
+					/>
+				))}
+			</div>
 			{tickets.isSuccess && pages > 0 && (
 				<div className='footer'>
 					<p>

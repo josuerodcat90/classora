@@ -3,6 +3,20 @@
 	background: #101114;
 	border-radius: 12px;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.list-rows {
+	flex: 1;
+	min-height: 0;
+}
+
+@media (min-width: 701px) and (min-height: 700px) {
+	.list-rows {
+		overflow-y: auto;
+	}
 }
 
 .list h2 {
@@ -20,7 +34,6 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	align-self: flex-end;
 	gap: 16px;
 }
 
