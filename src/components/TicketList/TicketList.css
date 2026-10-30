@@ -16,6 +16,8 @@
 @media (min-width: 701px) and (min-height: 700px) {
 	.list-rows {
 		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: #656c82 #1c1d23;
 	}
 }
 
