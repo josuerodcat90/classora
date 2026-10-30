@@ -1,17 +1,5 @@
 import { http } from 'msw';
-
-type Ticket = {
-	id: string;
-	key: string;
-	asset: string;
-	assignedTeam: string | null;
-	assignee: string;
-	severity: string;
-	state: string;
-	targetDate: string;
-	dueDate: string | null;
-	lastModified: string;
-};
+import type { Ticket } from '../domain/ticket.types';
 
 const seed: Ticket[] = [
 	{

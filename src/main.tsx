@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { setupWorker } from 'msw/browser';
-import { createMockHandlers } from './mock-api';
+import { createMockHandlers } from './mocks/ticket-api';
 
 const root = document.getElementById('root');
 

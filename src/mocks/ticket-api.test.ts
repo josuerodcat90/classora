@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
-import { createMockHandlers } from '../mock-api';
+import { createMockHandlers } from './ticket-api';
 
 const server = setupServer();
 beforeEach(() => server.listen());
