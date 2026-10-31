@@ -40,6 +40,10 @@
 	gap: 16px;
 }
 
+.footer {
+	border-top: 1px solid #34343a;
+}
+
 .list-head p,
 .footer p {
 	margin: 0;
@@ -70,9 +74,12 @@
 	padding: 16px 20px;
 }
 
-@media (max-width: 700px) {
+@container (max-width: 400px) {
 	.footer {
-		align-items: flex-start;
+		align-items: center;
 		flex-direction: column;
+	}
+	.pages {
+		justify-content: center;
 	}
 }
