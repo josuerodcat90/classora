@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
+	act,
 	fireEvent,
 	render,
 	screen,
@@ -10,7 +11,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createMockHandlers } from '../../mocks/ticket-api';
+import { baselineTickets, createMockHandlers } from '../../mocks/ticket-api';
 import { TicketsPage } from './TicketsPage';
 
 declare const process: { env: { TZ?: string } };
@@ -27,7 +28,7 @@ beforeAll(() => {
 	});
 	server.listen();
 });
-beforeEach(() => server.resetHandlers(...createMockHandlers()));
+beforeEach(() => server.resetHandlers(...createMockHandlers(baselineTickets)));
 afterAll(() => server.close());
 
 function Location() {
@@ -48,7 +49,7 @@ function renderPage(path = '/', token = 'mock-editor') {
 			mutations: { retry: false },
 		},
 	});
-	return render(
+	const result = render(
 		<QueryClientProvider client={client}>
 			<MemoryRouter initialEntries={[path]}>
 				<TicketsPage token={token} />
@@ -56,6 +57,7 @@ function renderPage(path = '/', token = 'mock-editor') {
 			</MemoryRouter>
 		</QueryClientProvider>,
 	);
+	return { ...result, client };
 }
 
 describe('ticket interface', () => {
@@ -116,6 +118,52 @@ describe('ticket interface', () => {
 				}),
 			).not.toBeInTheDocument(),
 		);
+	});
+	it('recovers cached tickets through retry without losing pagination', async () => {
+		const { client } = renderPage('/?limit=1');
+		await screen.findByText('SEC-1025');
+		server.use(http.get('/api/v1/tickets', () => HttpResponse.error()));
+		await act(async () => {
+			await client.invalidateQueries({ queryKey: ['tickets'] });
+		});
+		expect(await screen.findByRole('alert')).toHaveTextContent(
+			'No se pudieron actualizar los tickets',
+		);
+		expect(screen.getByText('SEC-1025')).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: 'Página siguiente' }),
+		).toBeEnabled();
+		server.resetHandlers(...createMockHandlers(baselineTickets));
+		fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+		await waitFor(() =>
+			expect(screen.queryByRole('alert')).not.toBeInTheDocument(),
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Página 2' }));
+		expect(await screen.findByText('SEC-1024')).toBeInTheDocument();
+	});
+	it('disables an open editor when refreshing permissions fails', async () => {
+		const { client } = renderPage();
+		fireEvent.click(
+			await screen.findByRole('button', {
+				name: /fecha límite.*SEC-1024/i,
+			}),
+		);
+		fireEvent.change(screen.getByLabelText('Fecha límite para SEC-1024'), {
+			target: { value: '2027-01-20' },
+		});
+		server.use(http.get('/api/v1/me', () => HttpResponse.error()));
+		await act(async () => {
+			await client.invalidateQueries({ queryKey: ['me'] });
+		});
+		expect(
+			await screen.findByText(/No se pudieron cargar los permisos/),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: 'Guardar' }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: /fecha límite.*SEC-1024/i }),
+		).not.toBeInTheDocument();
 	});
 	it('shows an error when tickets cannot be loaded', async () => {
 		server.use(http.get('/api/v1/tickets', () => HttpResponse.error()));
@@ -185,7 +233,7 @@ describe('ticket interface', () => {
 				await screen.findByText('Fecha límite actualizada'),
 			).toBeInTheDocument();
 			const row = screen.getByText('SEC-1024').closest('article')!;
-			expect(within(row).getByText('20 ene 2027')).toBeInTheDocument();
+			expect(within(row).getByText('20/01/2027')).toBeInTheDocument();
 		} finally {
 			if (previous === undefined) delete process.env.TZ;
 			else process.env.TZ = previous;
@@ -243,11 +291,18 @@ describe('ticket interface', () => {
 			).toBeDisabled(),
 		);
 		expect(within(row).getByText('Guardando…')).toBeInTheDocument();
+		const savingToast = screen.getByText('Guardando fecha límite…');
+		expect(
+			savingToast.parentElement?.querySelector('.lucide-save-check'),
+		).toBeInTheDocument();
 		expect(within(row).getByText('En progreso')).toBeInTheDocument();
 		release();
 		expect(
 			await screen.findByText('No se pudo actualizar la fecha límite'),
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText('Guardando fecha límite…'),
+		).not.toBeInTheDocument();
 		await waitFor(() =>
 			expect(within(row).getByText('Reportado')).toBeInTheDocument(),
 		);
@@ -268,8 +323,13 @@ describe('ticket interface', () => {
 			target: { value: '2027-01-20' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+		const successToast = await screen.findByText(
+			'Fecha límite actualizada',
+		);
+		expect(successToast).toBeInTheDocument();
+		expect(successToast.parentElement).toHaveClass('app-toast');
 		expect(
-			await screen.findByText('Fecha límite actualizada'),
-		).toBeInTheDocument();
+			screen.queryByText('Guardando fecha límite…'),
+		).not.toBeInTheDocument();
 	});
 });

@@ -33,6 +33,13 @@ describe('TicketRow', () => {
 		expect(screen.getByText('Reportado')).toBeInTheDocument();
 		expect(screen.getByText('Alta')).toBeInTheDocument();
 		expect(screen.getByText('Sin fecha límite')).toBeInTheDocument();
+		expect(screen.getByText('Fecha objetivo')).toBeInTheDocument();
+		expect(screen.getByText('20/01/2027')).toBeInTheDocument();
+		expect(screen.getByText('Fecha límite')).toBeInTheDocument();
+		expect(screen.getByText('Última actualización')).toBeInTheDocument();
+		expect(container.querySelector('time')).toHaveTextContent(
+			/^01\/01\/2026 - \d{2}:\d{2} h$/,
+		);
 		expect(container.querySelector('time')).toHaveAttribute(
 			'datetime',
 			ticket.lastModified,
@@ -84,7 +91,8 @@ describe('TicketRow', () => {
 				save={save}
 			/>,
 		);
-		expect(screen.getByText('10 ene 2027')).toBeInTheDocument();
+		expect(screen.getByText('10/01/2027')).toBeInTheDocument();
+		expect(screen.getByText('Fecha límite')).toBeInTheDocument();
 		fireEvent.click(
 			screen.getByRole('button', {
 				name: 'Editar fecha límite de SEC-1',
@@ -114,6 +122,38 @@ describe('TicketRow', () => {
 		expect(
 			screen.queryByLabelText('Fecha límite para SEC-1'),
 		).not.toBeInTheDocument();
+	});
+
+	it('does not reopen the editor after permissions are revoked or the ticket is completed', () => {
+		const props = { ticket, canEdit: true, pending: false, save: vi.fn() };
+		const { rerender } = render(<TicketRow {...props} />);
+		fireEvent.click(
+			screen.getByRole('button', {
+				name: 'Editar fecha límite de SEC-1',
+			}),
+		);
+		rerender(
+			<TicketRow
+				{...props}
+				canEdit={false}
+			/>,
+		);
+		rerender(<TicketRow {...props} />);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		fireEvent.click(
+			screen.getByRole('button', {
+				name: 'Editar fecha límite de SEC-1',
+			}),
+		);
+		rerender(
+			<TicketRow
+				{...props}
+				ticket={{ ...ticket, state: 'DONE' }}
+			/>,
+		);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		rerender(<TicketRow {...props} />);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
 	it('disables the date and save controls if an open editor becomes pending', () => {

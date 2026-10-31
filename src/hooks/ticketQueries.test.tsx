@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { setupServer } from 'msw/node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
-import { createMockHandlers } from '../mocks/ticket-api';
+import { baselineTickets, createMockHandlers } from '../mocks/ticket-api';
 import { useCurrentUser, useTickets } from './';
 
 const server = setupServer();
@@ -18,7 +18,7 @@ const params = {
 };
 
 beforeAll(() => server.listen());
-beforeEach(() => server.resetHandlers(...createMockHandlers()));
+beforeEach(() => server.resetHandlers(...createMockHandlers(baselineTickets)));
 afterAll(() => server.close());
 
 function wrapper({ children }: { children: ReactNode }) {

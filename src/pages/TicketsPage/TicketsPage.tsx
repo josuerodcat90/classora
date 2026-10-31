@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Blocks, SaveCheck } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+
 import {
 	useCurrentUser,
 	useTickets,
@@ -9,6 +11,7 @@ import {
 	useTicketListParams,
 } from '../../hooks';
 import { TicketFilters, TicketList } from '../../components';
+
 import type { TicketsPageProps } from './TicketsPage.types';
 import './TicketsPage.css';
 
@@ -59,13 +62,24 @@ export function TicketsPage({ token = 'mock-editor' }: TicketsPageProps) {
 	}
 
 	function save(id: string, dueDate: string) {
-		toast('Guardando fecha límite…');
+		const toastId = toast.loading('Guardando fecha límite…', {
+			icon: (
+				<SaveCheck
+					aria-hidden='true'
+					className='save-icon'
+					size={20}
+				/>
+			),
+		});
 		mutation.mutate(
 			{ id, dueDate },
 			{
-				onSuccess: () => toast.success('Fecha límite actualizada'),
+				onSuccess: () =>
+					toast.success('Fecha límite actualizada', { id: toastId }),
 				onError: () =>
-					toast.error('No se pudo actualizar la fecha límite'),
+					toast.error('No se pudo actualizar la fecha límite', {
+						id: toastId,
+					}),
 			},
 		);
 	}
@@ -74,8 +88,10 @@ export function TicketsPage({ token = 'mock-editor' }: TicketsPageProps) {
 		<>
 			<header className='app-header'>
 				<strong>
-					<span className='brand-mark'>◈</span> Classora{' '}
-					<span className='muted'>/ Tickets</span>
+					<span className='brand-mark'>
+						<Blocks />
+					</span>{' '}
+					Classora <span className='muted'>/ Tickets</span>
 				</strong>
 				<span className='muted'>Espacio de trabajo</span>
 			</header>
@@ -95,8 +111,11 @@ export function TicketsPage({ token = 'mock-editor' }: TicketsPageProps) {
 						tickets={tickets}
 						permissionsError={user.isError}
 						canEdit={
-							user.data?.permissions.includes('tickets.update') ??
-							false
+							!user.isError &&
+							(user.data?.permissions.includes(
+								'tickets.update',
+							) ??
+								false)
 						}
 						pending={pending}
 						params={params}
@@ -105,7 +124,17 @@ export function TicketsPage({ token = 'mock-editor' }: TicketsPageProps) {
 					/>
 				</div>
 			</main>
-			<Toaster />
+			<Toaster
+				toastOptions={{
+					className: 'app-toast',
+					style: {
+						background: '#18191a',
+						color: '#f7f8f8',
+						border: '1px solid #454851',
+						borderRadius: '8px',
+					},
+				}}
+			/>
 		</>
 	);
 }

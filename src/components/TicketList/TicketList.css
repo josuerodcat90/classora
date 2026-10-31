@@ -1,8 +1,25 @@
 .list {
+	container-type: inline-size;
 	border: 1px solid #34343a;
 	background: #101114;
 	border-radius: 12px;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.list-rows {
+	flex: 1;
+	min-height: 0;
+}
+
+@media (min-width: 701px) and (min-height: 700px) {
+	.list-rows {
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: #656c82 #1c1d23;
+	}
 }
 
 .list h2 {
@@ -20,8 +37,11 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	align-self: flex-end;
 	gap: 16px;
+}
+
+.footer {
+	border-top: 1px solid #34343a;
 }
 
 .list-head p,
@@ -54,9 +74,12 @@
 	padding: 16px 20px;
 }
 
-@media (max-width: 700px) {
+@container (max-width: 400px) {
 	.footer {
-		align-items: flex-start;
+		align-items: center;
 		flex-direction: column;
+	}
+	.pages {
+		justify-content: center;
 	}
 }

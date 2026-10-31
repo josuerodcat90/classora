@@ -43,7 +43,9 @@ export function TicketList({
 					className='message'
 					role='alert'
 				>
-					No se pudieron cargar los tickets.{' '}
+					{tickets.data
+						? 'No se pudieron actualizar los tickets. Los datos mostrados podrían estar desactualizados.'
+						: 'No se pudieron cargar los tickets.'}{' '}
 					<button onClick={() => tickets.refetch()}>
 						Reintentar
 					</button>
@@ -58,19 +60,26 @@ export function TicketList({
 					disponible.
 				</p>
 			)}
-			{tickets.isSuccess && tickets.data.data.length === 0 && (
+			{tickets.data && tickets.data.data.length === 0 && (
 				<p className='message'>No se encontraron tickets.</p>
 			)}
-			{tickets.data?.data.map((ticket) => (
-				<TicketRow
-					key={ticket.id}
-					ticket={ticket}
-					canEdit={canEdit}
-					pending={pending.includes(ticket.id)}
-					save={onSave}
-				/>
-			))}
-			{tickets.isSuccess && pages > 0 && (
+			<div
+				className='list-rows'
+				role='region'
+				aria-label='Tickets'
+				tabIndex={0}
+			>
+				{tickets.data?.data.map((ticket) => (
+					<TicketRow
+						key={ticket.id}
+						ticket={ticket}
+						canEdit={canEdit}
+						pending={pending.includes(ticket.id)}
+						save={onSave}
+					/>
+				))}
+			</div>
+			{tickets.data && pages > 0 && (
 				<div className='footer'>
 					<p>
 						{Math.min(params.offset + 1, total)}–
