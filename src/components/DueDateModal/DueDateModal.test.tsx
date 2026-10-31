@@ -4,12 +4,26 @@ import { DueDateModal } from './DueDateModal';
 
 describe('DueDateModal', () => {
 	it('locks the page at its current position and restores it on unmount', () => {
-		const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
-		const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY');
-		Object.defineProperty(window, 'scrollY', { configurable: true, value: 240 });
+		const scrollTo = vi
+			.spyOn(window, 'scrollTo')
+			.mockImplementation(() => {});
+		const originalScrollY = Object.getOwnPropertyDescriptor(
+			window,
+			'scrollY',
+		);
+		Object.defineProperty(window, 'scrollY', {
+			configurable: true,
+			value: 240,
+		});
 		document.body.style.position = 'relative';
 		const { unmount } = render(
-			<DueDateModal ticketKey='SEC-1' initialDate='' onClose={vi.fn()} onSave={vi.fn()} disabled={false} />,
+			<DueDateModal
+				ticketKey='SEC-1'
+				initialDate=''
+				onClose={vi.fn()}
+				onSave={vi.fn()}
+				disabled={false}
+			/>,
 		);
 		expect(document.body.style.position).toBe('fixed');
 		expect(document.body.style.top).toBe('-240px');
@@ -18,7 +32,8 @@ describe('DueDateModal', () => {
 		expect(document.body.style.top).toBe('');
 		expect(scrollTo).toHaveBeenCalledWith(0, 240);
 		document.body.style.position = '';
-		if (originalScrollY) Object.defineProperty(window, 'scrollY', originalScrollY);
+		if (originalScrollY)
+			Object.defineProperty(window, 'scrollY', originalScrollY);
 		scrollTo.mockRestore();
 	});
 	it('requires a valid date and submits the selected value', () => {
