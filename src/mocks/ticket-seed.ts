@@ -40,7 +40,7 @@ export const generatedTickets: Ticket[] = Array.from(
 				index % 3 === 0
 					? new Date(Date.UTC(2026, 10, 1 + index)).toISOString()
 					: null,
-			lastModified: new Date(Date.UTC(2026, 9, 4 + index)).toISOString(),
+			lastModified: new Date(Date.UTC(2026, 7, 4 + index)).toISOString(),
 		};
 	},
 );

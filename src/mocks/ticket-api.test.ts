@@ -34,6 +34,11 @@ describe('browser HTTP mock', () => {
 		const page = await response.json();
 		expect(page.pagination.totalElements).toBe(50);
 		expect(page.data).toHaveLength(50);
+		for (const ticket of page.data as Ticket[]) {
+			expect(Date.parse(ticket.lastModified)).toBeLessThanOrEqual(
+				Date.parse('2026-10-31T00:00:00Z'),
+			);
+		}
 		expect(
 			new Set(page.data.map((ticket: { id: string }) => ticket.id)).size,
 		).toBe(50);
