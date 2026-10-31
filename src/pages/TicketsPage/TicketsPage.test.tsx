@@ -233,7 +233,7 @@ describe('ticket interface', () => {
 				await screen.findByText('Fecha límite actualizada'),
 			).toBeInTheDocument();
 			const row = screen.getByText('SEC-1024').closest('article')!;
-			expect(within(row).getByText('20 ene 2027')).toBeInTheDocument();
+			expect(within(row).getByText('20/01/2027')).toBeInTheDocument();
 		} finally {
 			if (previous === undefined) delete process.env.TZ;
 			else process.env.TZ = previous;

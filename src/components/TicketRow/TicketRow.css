@@ -1,6 +1,8 @@
 .ticket {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-columns:
+		minmax(0, 1fr) minmax(95px, 0.5fr) minmax(95px, 0.5fr)
+		minmax(150px, 0.7fr) 40px;
 	gap: 12px;
 	padding: 12px 20px;
 	border-top: 1px solid #23252a;
@@ -67,6 +69,11 @@
 	background: #272b31;
 	border-color: #697482;
 }
+.ticket-date {
+	display: grid;
+	gap: 4px;
+	font-size: 12px;
+}
 .action,
 .action form {
 	display: flex;
@@ -87,6 +94,23 @@
 }
 @media (max-width: 700px) {
 	.ticket {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr) 44px;
+	}
+	.ticket h3 {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.ticket-date {
+		grid-column: 1 / -1;
+	}
+	.action {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: start;
+	}
+	.icon-button {
+		width: 44px;
+		height: 44px;
 	}
 }

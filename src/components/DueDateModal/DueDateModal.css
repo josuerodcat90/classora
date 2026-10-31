@@ -1,0 +1,94 @@
+.due-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: grid;
+	place-items: center;
+	padding: 20px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	background: rgb(0 0 0 / 75%);
+	animation: modal-fade 200ms ease-in-out;
+}
+.due-modal {
+	width: min(100%, 460px);
+	max-height: 100%;
+	overflow-y: auto;
+	background: #18191a;
+	border: 1px solid #454851;
+	border-radius: 12px;
+	padding: 24px;
+	animation: modal-rise 200ms ease-in-out;
+}
+.due-modal:focus {
+	outline: none;
+}
+.due-modal-header {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+}
+.due-modal-header h2 {
+	font-size: 18px;
+	margin: 0;
+}
+.due-modal-header p {
+	color: #b5bbc6;
+	margin: 8px 0 0;
+}
+.due-modal-close {
+	border: 0;
+	background: transparent;
+	min-height: 40px;
+	width: 40px;
+	height: 40px;
+	flex: 0 0 40px;
+	align-self: flex-start;
+	display: grid;
+	place-items: center;
+	padding: 8px;
+}
+.due-modal form {
+	display: grid;
+	gap: 8px;
+	margin-top: 22px;
+}
+.due-modal input {
+	color-scheme: dark;
+}
+.due-modal-error {
+	color: #ffbec0;
+	font-size: 12px;
+}
+.due-modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+.due-modal-actions button[type='submit']:not(:disabled) {
+	background: #5e6ad2;
+	border-color: #5e6ad2;
+}
+@keyframes modal-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes modal-rise {
+	from {
+		transform: translateY(10px);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.due-modal-overlay,
+	.due-modal {
+		animation: none;
+	}
+}
