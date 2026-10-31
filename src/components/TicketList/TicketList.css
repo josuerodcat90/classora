@@ -1,4 +1,5 @@
 .list {
+	container-type: inline-size;
 	border: 1px solid #34343a;
 	background: #101114;
 	border-radius: 12px;
