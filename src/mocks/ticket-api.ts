@@ -129,7 +129,6 @@ export function createMockHandlers(
 	seed: Ticket[] = [...baselineTickets, ...generatedTickets],
 ) {
 	const tickets = seed.map((ticket) => ({ ...ticket }));
-	let revision = 0;
 	const origin = window.location.origin.replace(
 		/[.*+?^${}()|[\]\\]/g,
 		'\\$&',
@@ -243,9 +242,7 @@ export function createMockHandlers(
 				if (ticket.state === 'DONE') return problem(409, 'Conflict');
 				ticket.dueDate = date;
 				if (ticket.state === 'REPORTED') ticket.state = 'IN_PROGRESS';
-				ticket.lastModified = new Date(
-					Date.UTC(2026, 9, 3, 0, 0, ++revision),
-				).toISOString();
+				ticket.lastModified = new Date().toISOString();
 				return json(ticket);
 			},
 		),
