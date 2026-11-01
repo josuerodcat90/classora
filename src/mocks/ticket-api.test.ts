@@ -118,6 +118,27 @@ describe('browser HTTP mock', () => {
 		).toEqual(before);
 	});
 
+	it('treats ALL as an unfiltered value independently for each filter', async () => {
+		const fetch = createMockFetch();
+		for (const [query, equivalent] of [
+			['?state=ALL', ''],
+			['?severity=ALL', ''],
+			['?state=ALL&severity=ALL', ''],
+			['?state=ALL&severity=HIGH', '?severity=HIGH'],
+			['?state=REPORTED&severity=ALL', '?state=REPORTED'],
+		]) {
+			const response = await fetch(`/api/v1/tickets${query}`, {
+				headers: auth,
+			});
+			const baseline = await fetch(`/api/v1/tickets${equivalent}`, {
+				headers: auth,
+			});
+			expect(response.status, query).toBe(200);
+			expect(baseline.status, equivalent).toBe(200);
+			expect(await response.json()).toEqual(await baseline.json());
+		}
+	});
+
 	it('applies filters, sorting, pagination and query validation', async () => {
 		const fetch = createMockFetch();
 		const get = async (query: string) =>
@@ -141,8 +162,8 @@ describe('browser HTTP mock', () => {
 			'offset=1.5',
 			'limit=0',
 			'limit=101',
-			'state=ALL',
-			'severity=ALL',
+			'state=UNKNOWN',
+			'severity=UNKNOWN',
 			'sort=bad',
 			'direction=bad',
 			`q=${'x'.repeat(257)}`,

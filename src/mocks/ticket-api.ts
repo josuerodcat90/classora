@@ -169,16 +169,22 @@ export function createMockHandlers(
 				limit < 1 ||
 				limit > 100 ||
 				[...q].length > 256 ||
-				(state !== null && !states.includes(state)) ||
-				(severity !== null && !severities.includes(severity)) ||
+				(state !== null &&
+					state !== 'ALL' &&
+					!states.includes(state)) ||
+				(severity !== null &&
+					severity !== 'ALL' &&
+					!severities.includes(severity)) ||
 				!['LAST_MODIFIED', 'TARGET_DATE'].includes(sort) ||
 				!['ASC', 'DESC'].includes(direction)
 			)
 				return problem(422, 'Unprocessable Entity');
 			const filtered = tickets.filter(
 				(ticket) =>
-					(!state || ticket.state === state) &&
-					(!severity || ticket.severity === severity) &&
+					(!state || state === 'ALL' || ticket.state === state) &&
+					(!severity ||
+						severity === 'ALL' ||
+						ticket.severity === severity) &&
 					[
 						ticket.key,
 						ticket.asset,
