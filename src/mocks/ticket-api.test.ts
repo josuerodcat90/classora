@@ -62,6 +62,28 @@ describe('browser HTTP mock', () => {
 		});
 		expect(await reset.json()).toEqual(page);
 	});
+	it('records the current time when a ticket is updated', async () => {
+		const fetch = createMockFetch();
+		const before = Date.now();
+		const response = await fetch('/api/v1/tickets/ticket-1024', {
+			method: 'PATCH',
+			headers: auth,
+			body: JSON.stringify({ dueDate: '2026-12-18T10:00:00Z' }),
+		});
+		const after = Date.now();
+		expect(response.status).toBe(200);
+		const updated = await response.json();
+		expect(updated.dueDate).toBe('2026-12-18T10:00:00Z');
+		expect(Date.parse(updated.lastModified)).toBeGreaterThanOrEqual(before);
+		expect(Date.parse(updated.lastModified)).toBeLessThanOrEqual(after);
+		const list = await fetch('/api/v1/tickets', { headers: auth });
+		expect(list.status).toBe(200);
+		const page = await list.json();
+		expect(
+			page.data.find((ticket: Ticket) => ticket.id === updated.id),
+		).toEqual(updated);
+	});
+
 	it('serves, updates and resets deterministic tickets through HTTP', async () => {
 		const fetch = createMockFetch();
 		const response = await fetch('/api/v1/tickets?state=REPORTED&limit=1', {
@@ -118,6 +140,27 @@ describe('browser HTTP mock', () => {
 		).toEqual(before);
 	});
 
+	it('treats ALL as an unfiltered value independently for each filter', async () => {
+		const fetch = createMockFetch();
+		for (const [query, equivalent] of [
+			['?state=ALL', ''],
+			['?severity=ALL', ''],
+			['?state=ALL&severity=ALL', ''],
+			['?state=ALL&severity=HIGH', '?severity=HIGH'],
+			['?state=REPORTED&severity=ALL', '?state=REPORTED'],
+		]) {
+			const response = await fetch(`/api/v1/tickets${query}`, {
+				headers: auth,
+			});
+			const baseline = await fetch(`/api/v1/tickets${equivalent}`, {
+				headers: auth,
+			});
+			expect(response.status, query).toBe(200);
+			expect(baseline.status, equivalent).toBe(200);
+			expect(await response.json()).toEqual(await baseline.json());
+		}
+	});
+
 	it('applies filters, sorting, pagination and query validation', async () => {
 		const fetch = createMockFetch();
 		const get = async (query: string) =>
@@ -141,8 +184,8 @@ describe('browser HTTP mock', () => {
 			'offset=1.5',
 			'limit=0',
 			'limit=101',
-			'state=ALL',
-			'severity=ALL',
+			'state=UNKNOWN',
+			'severity=UNKNOWN',
 			'sort=bad',
 			'direction=bad',
 			`q=${'x'.repeat(257)}`,
@@ -289,7 +332,7 @@ describe('browser HTTP mock', () => {
 		}
 	});
 
-	it('returns problem details for each rejected mutation and does not advance revision', async () => {
+	it('returns problem details for each rejected mutation without changing tickets', async () => {
 		const fetch = createMockFetch();
 		const before = await (
 			await fetch('/api/v1/tickets', { headers: auth })
@@ -337,7 +380,7 @@ describe('browser HTTP mock', () => {
 				body: good,
 			})
 		).json();
-		expect(success.lastModified).toBe('2026-10-03T00:00:01.000Z');
+		expect(Number.isFinite(Date.parse(success.lastModified))).toBe(true);
 	});
 
 	it('returns not found for malformed encoded ticket IDs without changing state', async () => {
@@ -369,7 +412,7 @@ describe('browser HTTP mock', () => {
 				body: JSON.stringify({ dueDate: '2026-11-15T10:00:00Z' }),
 			})
 		).json();
-		expect(updated.lastModified).toBe('2026-10-03T00:00:01.000Z');
+		expect(Number.isFinite(Date.parse(updated.lastModified))).toBe(true);
 	});
 
 	it('enforces identity for the current user', async () => {

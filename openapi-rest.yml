@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     Contract for the technical exercise. The server URL is fictitious and is not a deployed service.
-    Omitted state and severity parameters mean no filter. ALL is a UI-only value and is never sent to the API; these two optional enum parameters intentionally have no default because no enum value represents an unfiltered request.
+    Omitted state and severity parameters default to ALL, meaning no filter. ALL is a query filter value, not a ticket state or severity.
     Bounds not specified by the exercise are assumptions for this example contract. Authentication and additional error responses are also assumed.
     To prevent TypeScript drift, generate types from this OpenAPI file and check generated output in CI.
 servers:
@@ -132,23 +132,25 @@ components:
     State:
       name: state
       in: query
-      description: Filter by state; omission means all states. ALL is not an API value.
+      description: Filter by state; ALL or omission means all states.
       required: false
       example: IN_PROGRESS
       schema:
         type: string
         maxLength: 16
-        enum: [REPORTED, IN_PROGRESS, PENDING_SECURITY, DONE]
+        enum: [ALL, REPORTED, IN_PROGRESS, PENDING_SECURITY, DONE]
+        default: ALL
     Severity:
       name: severity
       in: query
-      description: Filter by severity; omission means all severities. ALL is not an API value.
+      description: Filter by severity; ALL or omission means all severities.
       required: false
       example: HIGH
       schema:
         type: string
         maxLength: 8
-        enum: [CRITICAL, HIGH, MEDIUM, LOW]
+        enum: [ALL, CRITICAL, HIGH, MEDIUM, LOW]
+        default: ALL
     Sort:
       name: sort
       in: query
